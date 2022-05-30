@@ -39,6 +39,7 @@ import './interfaces/IUniswapV2Router02V5.sol';
 import './libraries/FraxswapRouterLibrary.sol';
 import './interfaces/IERC20.sol';
 import './interfaces/IWETH.sol';
+import "../../lib/forge-std/src/console.sol";
 
 contract FraxswapRouter is IUniswapV2Router02V5 {
 

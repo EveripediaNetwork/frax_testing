@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.10;
 
-import {Test, stdError} from "forge-std/Test.sol";
+import {Test, stdError, console} from "forge-std/Test.sol";
 import {ERC20} from "solmate/tokens/ERC20.sol";
 import {MockERC20} from "solmate/test/utils/mocks/MockERC20.sol";
 import {FraxswapPair} from "../src/core/FraxswapPair.sol";
@@ -57,6 +57,7 @@ contract TestFraxswapPair is Test {
         pair = new FraxswapPair();
         pair.initialize(address(token0), address(token1));
         vm.stopPrank();
+        console.logBytes32(bytes32(keccak256(type(FraxswapPair).creationCode)));
 
         token0.mint(address(this), 10 ether);
         token1.mint(address(this), 10 ether);
