@@ -13,6 +13,7 @@ contract TestFraxswapFactory is Test {
     MockERC20 public token1;
     MockERC20 public token2;
     MockERC20 public token3;
+    address public me;
 
     function setUp() public {
         factory = new FraxswapFactory(vm.addr(1));
@@ -21,6 +22,7 @@ contract TestFraxswapFactory is Test {
         token1 = new MockERC20("FraxswapToken1", "UT1", 18);
         token2 = new MockERC20("FraxswapToken2", "UT2", 18);
         token3 = new MockERC20("FraxswapToken3", "UT3", 18);
+        me = vm.addr(1);
     }
 
     function testCreatePair() public {
@@ -107,5 +109,14 @@ contract TestFraxswapFactory is Test {
         factory.createPair(address(token0), address(token1));
     }
 
-    // TODO: test setFeeTo &
+    function testSetFeeTo() public {
+        vm.prank(me);
+        factory.setFeeTo(vm.addr(2));
+    }
+
+    function testFailSetToFeeByForbiddenAddr() public {
+        vm.startPrank(vm.addr(3));
+        vm.expectRevert("FORBIDDEN");
+        factory.setFeeTo(me);
+    }
 }
