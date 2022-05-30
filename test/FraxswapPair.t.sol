@@ -281,11 +281,6 @@ contract TestFraxswapPair is Test {
         assertEq(pair.balanceOf(address(user)), 0);
         assertEq(pair.totalSupply(), pair.MINIMUM_LIQUIDITY());
 
-        // second user penalised for unbalanced liquidity, hence reserves unbalanced
-        assertPairReserves(
-            pair.MINIMUM_LIQUIDITY(),
-            1 ether + pair.MINIMUM_LIQUIDITY()
-        );
         assertEq(token0.balanceOf(address(this)), 10 ether - 1 ether + a10);
         assertEq(token1.balanceOf(address(this)), 10 ether - 1 ether + a11);
         assertEq(token0.balanceOf(address(user)), 10 ether - 2 ether + a00);
@@ -300,10 +295,10 @@ contract TestFraxswapPair is Test {
         // transfer to maintain K
         token1.transfer(address(pair), 1 ether);
 
-        pair.swap(0.5 ether, 0 ether, address(user), "");
+        pair.swap(0.4 ether, 0 ether, address(user), "");
 
-        assertPairReserves(0.5 ether, 2 ether);
-        assertEq(token0.balanceOf(address(user)), 10 ether + 0.5 ether);
+        assertPairReserves(0.6 ether, 2 ether);
+        assertEq(token0.balanceOf(address(user)), 10 ether + 0.4 ether);
     }
 
     function testSwapMultipleUserLiquidity() public {
@@ -322,9 +317,9 @@ contract TestFraxswapPair is Test {
         // transfer to maintain K
         token0.transfer(address(pair), 1 ether);
 
-        pair.swap(0 ether, 1 ether, address(user), "");
+        pair.swap(0 ether, 0.9 ether, address(user), "");
 
-        assertPairReserves(4 ether, 3 ether);
+        assertPairReserves(4 ether, 3.1 ether);
     }
 
     function testSwapUnderpriced() public {
@@ -378,7 +373,7 @@ contract TestFraxswapPair is Test {
     }
 
     function testCumulativePrices() public {
-        vm.warp(0);
+        vm.warp(1);
         token0.transfer(address(pair), 1 ether);
         token1.transfer(address(pair), 1 ether);
         pair.mint(address(this));
@@ -391,19 +386,19 @@ contract TestFraxswapPair is Test {
         uint256 currentPrice1
         ) = getCurrentMarginalPrices();
 
-        vm.warp(1);
-        pair.sync();
-        assertBlockTimestampLast(1);
-        assertCumulativePrices(currentPrice0, currentPrice1);
-
         vm.warp(2);
         pair.sync();
         assertBlockTimestampLast(2);
-        assertCumulativePrices(currentPrice0 * 2, currentPrice1 * 2);
+        assertCumulativePrices(currentPrice0, currentPrice1);
 
         vm.warp(3);
         pair.sync();
         assertBlockTimestampLast(3);
+        assertCumulativePrices(currentPrice0 * 2, currentPrice1 * 2);
+
+        vm.warp(4);
+        pair.sync();
+        assertBlockTimestampLast(4);
         assertCumulativePrices(currentPrice0 * 3, currentPrice1 * 3);
 
         user.addLiquidity(
@@ -416,25 +411,25 @@ contract TestFraxswapPair is Test {
 
         (uint256 newPrice0, uint256 newPrice1) = getCurrentMarginalPrices();
 
-        vm.warp(4);
+        vm.warp(5);
         pair.sync();
-        assertBlockTimestampLast(4);
+        assertBlockTimestampLast(5);
         assertCumulativePrices(
             currentPrice0 * 3 + newPrice0,
             currentPrice1 * 3 + newPrice1
         );
 
-        vm.warp(5);
+        vm.warp(6);
         pair.sync();
-        assertBlockTimestampLast(5);
+        assertBlockTimestampLast(6);
         assertCumulativePrices(
             currentPrice0 * 3 + newPrice0 * 2,
             currentPrice1 * 3 + newPrice1 * 2
         );
 
-        vm.warp(6);
+        vm.warp(7);
         pair.sync();
-        assertBlockTimestampLast(6);
+        assertBlockTimestampLast(7);
         assertCumulativePrices(
             currentPrice0 * 3 + newPrice0 * 3,
             currentPrice1 * 3 + newPrice1 * 3
