@@ -40,6 +40,7 @@ import './interfaces/IUniswapV2FactoryV5.sol';
 import './interfaces/IUniswapV2CalleeV5.sol';
 import '../libraries/TransferHelper.sol';
 import "../twamm/LongTermOrders.sol";
+import "../../lib/forge-std/src/console.sol";
 
 contract FraxswapPair is IUniswapV2PairPartialV5, FraxswapERC20 {
     using UQ112x112 for uint224;
@@ -314,6 +315,10 @@ contract FraxswapPair is IUniswapV2PairPartialV5, FraxswapERC20 {
         }
         uint amount0In = balance0 > _reserve0 - amount0Out ? balance0 - (_reserve0 - amount0Out) : 0;
         uint amount1In = balance1 > _reserve1 - amount1Out ? balance1 - (_reserve1 - amount1Out) : 0;
+        console.log(amount0In);
+        console.log(balance0);
+        console.log(_reserve0);
+        console.log(amount0Out);
         require(amount0In > 0 || amount1In > 0, "EC06"); // INSUFFICIENT_INPUT_AMOUNT
         {// scope for reserve{0,1}Adjusted, avoids stack too deep errors
             uint balance0Adjusted = (balance0 * 1000) - (amount0In * 3);

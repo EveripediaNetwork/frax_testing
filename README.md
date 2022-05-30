@@ -7,7 +7,7 @@
 
 run:
 ```sh
-forge init
+forge install
 forge build
 forge test
 ```

@@ -146,18 +146,18 @@ contract TestFraxswapPair is Test {
         assertEq(pair.totalSupply(), l1 + l2 + pair.MINIMUM_LIQUIDITY());
     }
 
-    function testMintArithmeticUnderflow() public {
+    function testCannotMintArithmeticUnderflow() public {
         // 0x11: Arithmetic over/underflow
         vm.expectRevert(stdError.arithmeticError);
 
         pair.mint(address(this));
     }
 
-    function testMintInsufficientLiquidity() public {
+    function testCannotMintInsufficientLiquidity() public {
         token0.transfer(address(pair), 1000);
         token1.transfer(address(pair), 1000);
 
-        vm.expectRevert();
+        vm.expectRevert(abi.encodePacked(""));
         pair.mint(address(this));
     }
 
@@ -226,12 +226,12 @@ contract TestFraxswapPair is Test {
         pair.burn(address(this));
     }
 
-    function testBurnInsufficientLiquidityBurned() public {
+    function testCannotBurnInsufficientLiquidityBurned() public {
         token0.transfer(address(pair), 1 ether);
         token1.transfer(address(pair), 1 ether);
         pair.mint(address(this));
 
-        vm.expectRevert();
+        vm.expectRevert(abi.encodePacked(""));
         pair.burn(address(this));
     }
 
@@ -292,7 +292,7 @@ contract TestFraxswapPair is Test {
         assertEq(token1.balanceOf(address(user)), 10 ether - 3 ether + a01);
     }
 
-    function testSwap() public {
+    function testSwapRight() public {
         token0.transfer(address(pair), 1 ether);
         token1.transfer(address(pair), 1 ether);
         pair.mint(address(this));
@@ -340,7 +340,7 @@ contract TestFraxswapPair is Test {
     }
 
     function testSwapInvalidAmount() public {
-        vm.expectRevert(abi.encodeWithSignature("InvalidAmount()"));
+        vm.expectRevert(abi.encodePacked("EC03"));
         pair.swap(0 ether, 0 ether, address(user), "");
     }
 
@@ -349,7 +349,7 @@ contract TestFraxswapPair is Test {
         token1.transfer(address(pair), 1 ether);
         pair.mint(address(this));
 
-        vm.expectRevert(abi.encodeWithSignature("EC04"));
+        vm.expectRevert(abi.encodePacked("EC04"));
         pair.swap(3 ether, 0 ether, address(user), "");
     }
 
@@ -358,10 +358,10 @@ contract TestFraxswapPair is Test {
         token1.transfer(address(pair), 1 ether);
         pair.mint(address(this));
 
-        vm.expectRevert(abi.encodeWithSignature("SwapToSelf()"));
+        vm.expectRevert(abi.encodePacked("EC04"));
         pair.swap(1 ether, 0 ether, address(token0), "");
 
-        vm.expectRevert(abi.encodeWithSignature("SwapToSelf()"));
+        vm.expectRevert(abi.encodePacked("EC04"));
         pair.swap(0 ether, 1 ether, address(token1), "");
     }
 
@@ -370,14 +370,10 @@ contract TestFraxswapPair is Test {
         token1.transfer(address(pair), 1 ether);
         pair.mint(address(this));
 
-        vm.expectRevert(
-            abi.encodeWithSignature("InvalidConstantProductFormula()")
-        );
+        vm.expectRevert(abi.encodePacked("EC04"));
         pair.swap(1 ether, 0 ether, address(user), "");
 
-        vm.expectRevert(
-            abi.encodeWithSignature("InvalidConstantProductFormula()")
-        );
+        vm.expectRevert(abi.encodePacked("EC04"));
         pair.swap(0 ether, 1 ether, address(user), "");
     }
 
