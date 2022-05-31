@@ -78,7 +78,7 @@ contract TestFraxswapPair is Test {
     view
     returns (uint256 price0, uint256 price1)
     {
-        (uint112 reserve0, uint112 reserve1, ) = pair.getReserves();
+        (uint112 reserve0, uint112 reserve1,) = pair.getReserves();
 
         price0 = reserve0 > 0
         ? uint256(UQ112x112.encode(reserve1)) / reserve0
@@ -102,7 +102,7 @@ contract TestFraxswapPair is Test {
     }
 
     function assertPairReserves(uint256 _reserve0, uint256 _reserve1) public {
-        (uint112 reserve0, uint112 reserve1, ) = pair.getReserves();
+        (uint112 reserve0, uint112 reserve1,) = pair.getReserves();
         assertEq(reserve0, _reserve0);
         assertEq(reserve1, _reserve1);
     }
@@ -435,6 +435,40 @@ contract TestFraxswapPair is Test {
             currentPrice0 * 3 + newPrice0 * 3,
             currentPrice1 * 3 + newPrice1 * 3
         );
+    }
+
+    function testSwapTwammRight() public {
+        token0.transfer(address(pair), 10 ether);
+        token1.transfer(address(pair), 10 ether);
+        pair.mint(address(this));
+
+        vm.startPrank(address(user));
+        token1.approve(address(pair), 1 ether);
+        (
+        uint256 token0Rate,
+        uint256 token1Rate,
+        uint256 lastVirtualOrderTimestamp,
+        uint256 orderTimeInterval_rtn,
+        uint256 rewardFactorPool0,
+        uint256 rewardFactorPool1
+        ) = pair.getTwammState();
+
+        pair.longTermSwapFrom1To0(1 ether, 24);
+        assertEq(token1.balanceOf(address(user)), 9 ether);
+        vm.warp(12 * orderTimeInterval_rtn);
+        pair.cancelLongTermSwap(0);
+        // half of order
+        assertEqAprox(token1.balanceOf(address(user)), 9.50 ether, 0.05 ether);
+        vm.stopPrank();
+    }
+
+    function assertEqAprox(
+        uint256 a,
+        uint256 b,
+        uint256 epsilonInv
+    ) internal {
+        assertLe(a, b + epsilonInv);
+        assertGe(a, b - epsilonInv);
     }
 
     // TODO: test all twamm related stuff
