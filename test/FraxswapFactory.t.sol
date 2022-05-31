@@ -112,11 +112,24 @@ contract TestFraxswapFactory is Test {
     function testSetFeeTo() public {
         vm.prank(me);
         factory.setFeeTo(vm.addr(2));
+        assertEq(factory.feeTo(), vm.addr(2));
     }
 
-    function testSetToFeeByForbiddenAddr() public {
-        vm.startPrank(vm.addr(3));
+    function testSetFeeToByForbiddenAddr() public {
+        vm.prank(vm.addr(3));
         vm.expectRevert();
         factory.setFeeTo(me);
+    }
+
+    function testSetFeeToSetter() public {
+        vm.prank(me);
+        factory.setFeeToSetter(vm.addr(3));
+        assertEq(factory.feeToSetter(), vm.addr(3));
+    }
+
+    function testsetFeeToSetterByForbiddenAddr() public {
+        vm.prank(vm.addr(3));
+        vm.expectRevert();
+        factory.setFeeToSetter(me);
     }
 }
