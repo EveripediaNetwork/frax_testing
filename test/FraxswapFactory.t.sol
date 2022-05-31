@@ -114,9 +114,9 @@ contract TestFraxswapFactory is Test {
         factory.setFeeTo(vm.addr(2));
     }
 
-    function testFailSetToFeeByForbiddenAddr() public {
+    function testSetToFeeByForbiddenAddr() public {
         vm.startPrank(vm.addr(3));
-        vm.expectRevert("FORBIDDEN");
+        vm.expectRevert();
         factory.setFeeTo(me);
     }
 }
