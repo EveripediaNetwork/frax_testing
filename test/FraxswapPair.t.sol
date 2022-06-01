@@ -288,6 +288,22 @@ contract TestFraxswapPair is Test {
         assertEq(token1.balanceOf(address(user)), 10 ether - 3 ether + a01);
     }
 
+    function testFailRemoveUnexistentLiquidity() public {
+        user.removeLiquidity(address(pair), 1);
+    }
+
+    function testFailTryToRemoveHigherLiquidity() public {
+        uint256 liquidity = user.addLiquidity(
+            address(pair),
+            address(token0),
+            address(token1),
+            2 ether,
+            2 ether
+        );
+
+        user.removeLiquidity(address(pair), liquidity + 1 ether);
+    }
+
     function testSwapRight() public {
         token0.transfer(address(pair), 1 ether);
         token1.transfer(address(pair), 1 ether);
@@ -472,4 +488,28 @@ contract TestFraxswapPair is Test {
     }
 
     // TODO: test all twamm related stuff
+        function testSwapTwammLeft() public {
+        token0.transfer(address(pair), 10 ether);
+        token1.transfer(address(pair), 10 ether);
+        pair.mint(address(this));
+
+        vm.startPrank(address(user));
+        token0.approve(address(pair), 1 ether);
+        (
+        uint256 token0Rate,
+        uint256 token1Rate,
+        uint256 lastVirtualOrderTimestamp,
+        uint256 orderTimeInterval_rtn,
+        uint256 rewardFactorPool0,
+        uint256 rewardFactorPool1
+        ) = pair.getTwammState();
+
+        pair.longTermSwapFrom0To1(1 ether, 24);
+        assertEq(token0.balanceOf(address(user)), 9 ether);
+        vm.warp(12 * orderTimeInterval_rtn);
+        pair.cancelLongTermSwap(0);
+        // half of order
+        assertEqAprox(token0.balanceOf(address(user)), 9.50 ether, 0.05 ether);
+        vm.stopPrank();
+    }
 }
