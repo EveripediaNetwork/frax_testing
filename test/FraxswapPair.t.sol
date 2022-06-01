@@ -461,12 +461,11 @@ contract TestFraxswapPair is Test {
         vm.startPrank(address(user));
         token1.approve(address(pair), 1 ether);
         (
-        uint256 token0Rate,
-        uint256 token1Rate,
-        uint256 lastVirtualOrderTimestamp,
+        ,
+        ,
+        ,
         uint256 orderTimeInterval_rtn,
-        uint256 rewardFactorPool0,
-        uint256 rewardFactorPool1
+        ,
         ) = pair.getTwammState();
 
         pair.longTermSwapFrom1To0(1 ether, 24);
@@ -496,12 +495,11 @@ contract TestFraxswapPair is Test {
         vm.startPrank(address(user));
         token0.approve(address(pair), 1 ether);
         (
-        uint256 token0Rate,
-        uint256 token1Rate,
-        uint256 lastVirtualOrderTimestamp,
+        ,
+        ,
+        ,
         uint256 orderTimeInterval_rtn,
-        uint256 rewardFactorPool0,
-        uint256 rewardFactorPool1
+        ,
         ) = pair.getTwammState();
 
         pair.longTermSwapFrom0To1(1 ether, 24);
