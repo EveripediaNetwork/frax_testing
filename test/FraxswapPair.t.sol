@@ -6,6 +6,7 @@ import {ERC20} from "solmate/tokens/ERC20.sol";
 import {MockERC20} from "solmate/test/utils/mocks/MockERC20.sol";
 import {FraxswapPair} from "../src/core/FraxswapPair.sol";
 import {UQ112x112} from "../src/core/libraries/UQ112x112.sol";
+import "../lib/forge-std/src/console.sol";
 
 contract MockFactory {
     function feeTo() public returns (address) {
@@ -487,7 +488,7 @@ contract TestFraxswapPair is Test {
     }
 
     // TODO: test all twamm related stuff
-        function testSwapTwammLeft() public {
+    function testSwapTwammLeft() public {
         token0.transfer(address(pair), 10 ether);
         token1.transfer(address(pair), 10 ether);
         pair.mint(address(this));
@@ -509,5 +510,57 @@ contract TestFraxswapPair is Test {
         // half of order
         assertEqAprox(token0.balanceOf(address(user)), 9.50 ether, 0.05 ether);
         vm.stopPrank();
+    }
+
+    function testWithdrawProceeds() public {
+        token0.transfer(address(pair), 10 ether);
+        token1.transfer(address(pair), 10 ether);
+        pair.mint(address(this));
+
+        vm.startPrank(address(user));
+        token0.approve(address(pair), 10 ether);
+
+        pair.longTermSwapFrom0To1(10 ether, 12);
+
+        vm.warp(3);
+        (bool is_expired, address rewardTkn, ) = pair.withdrawProceedsFromLongTermSwap(0);
+        assertEq(is_expired == false ? 0 : 1, 0);
+        assertEq(rewardTkn, address(token1));
+    }
+
+    function testGetOrderId() public {
+        token0.transfer(address(pair), 10 ether);
+        token1.transfer(address(pair), 10 ether);
+        pair.mint(address(this));
+
+        vm.startPrank(address(user));
+        token1.approve(address(pair), 1 ether);
+
+        (uint256 orderId) = pair.longTermSwapFrom1To0(1 ether, 24);
+        assertEq(orderId, 0);
+        assertEq(pair.getNextOrderID(), 1);
+    }
+
+    function testTwammState() public {
+        token0.transfer(address(pair), 10 ether);
+        token1.transfer(address(pair), 10 ether);
+        pair.mint(address(this));
+
+        vm.startPrank(address(user));
+        token1.approve(address(pair), 10 ether);
+
+        pair.longTermSwapFrom1To0(10 ether, 10);
+
+        (
+            uint256 token0Rate,
+            uint256 token1Rate,
+            ,
+            uint256 orderTimeInterval_rtn,
+            ,
+        ) = pair.getTwammState();
+
+        console.log(token0Rate);
+        console.log(token1Rate / 1e18);
+        console.log(orderTimeInterval_rtn);
     }
 }
