@@ -552,15 +552,30 @@ contract TestFraxswapPair is Test {
         pair.longTermSwapFrom1To0(10 ether, 10);
 
         (
-            uint256 token0Rate,
+            ,
             uint256 token1Rate,
             ,
-            uint256 orderTimeInterval_rtn,
+            ,
             ,
         ) = pair.getTwammState();
+        
+        (
+            ,
+            ,
+            uint256 saleRate,
+            address owner,
+            address sellTokenAddr,
+        ) = pair.getTwammOrder(0);
 
-        console.log(token0Rate);
-        console.log(token1Rate / 1e18);
-        console.log(orderTimeInterval_rtn);
+        assertEq(token1Rate, saleRate);
+        assertEq(address(user), owner);
+        assertEq(sellTokenAddr, address(token1));
+
+        vm.warp(11);
+
+        (, uint256 totalReward) = pair.getTwammOrderProceeds(0);
+
+        (, uint256 _totalReward) = pair.getTwammOrderProceedsView(0, block.timestamp);
+        assertEq(totalReward, _totalReward);
     }
 }
