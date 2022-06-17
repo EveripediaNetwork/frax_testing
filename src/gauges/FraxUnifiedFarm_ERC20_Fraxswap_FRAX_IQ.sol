@@ -1299,11 +1299,11 @@ contract FraxUnifiedFarmTemplate is Owned, ReentrancyGuard {
     /* ========== STATE VARIABLES ========== */
 
     // Instances
-    IveFXS private veFXS = IveFXS(0xc8418aF6358FFddA74e09Ca9CC3Fe03Ca6aDC5b0);
+    IveFXS private veFXS = IveFXS(0xc8418aF6358FFddA74e09Ca9CC3Fe03Ca6aDC5b0); // CESAR constant
 
     // Frax related
     address internal constant frax_address = 0x853d955aCEf822Db058eb8505911ED77F175b99e;
-    bool internal frax_is_token0;
+    bool internal frax_is_token0; // CESAR immutable (move to FraxUnifiedFarm_ERC20 bcs frax_is_token0 is not used in template)
     uint256 public fraxPerLPStored;
 
     // Constant for various precisions
@@ -1660,7 +1660,7 @@ contract FraxUnifiedFarmTemplate is Owned, ReentrancyGuard {
     }
 
     // Staker can allow a veFXS proxy (the proxy will have to toggle them first)
-    function stakerSetVeFXSProxy(address proxy_address) external {
+    function stakerSetVeFXSProxy(address proxy_address) external { // CESAR if someone was in a prev. proxy add liquidity, switch proxy and remove liq. its gonna make balances wrong. worth checking if user was in proxy already
         require(valid_vefxs_proxies[proxy_address], "Invalid proxy");
         require(proxy_allowed_stakers[proxy_address][msg.sender], "Proxy has not allowed you yet");
         staker_designated_proxies[msg.sender] = proxy_address;
@@ -1777,7 +1777,7 @@ contract FraxUnifiedFarmTemplate is Owned, ReentrancyGuard {
         }
 
         // Update the last reward claim time
-        lastRewardClaimTime[rewardee] = block.timestamp;
+        lastRewardClaimTime[rewardee] = block.timestamp; // CESAR I would do this before the transfers. In theory the function that calls this has reentrancy, but if we ever forget to add that...
     }
 
 
@@ -2190,7 +2190,7 @@ contract FraxUnifiedFarm_ERC20 is FraxUnifiedFarmTemplate {
         // Uniswap V2
         stakingToken = IUniswapV2Pair(_stakingToken);
         address token0 = stakingToken.token0();
-        if (token0 == frax_address) frax_is_token0 = true;
+        if (token0 == frax_address) frax_is_token0 = true; // CESAR: consider frax_is_token0 as immutable defined on constructor. will save gas on calls fraxPerLPToken() that its called in sync & retrocatchup
         else frax_is_token0 = false;
 
         // Vesper
@@ -2409,7 +2409,7 @@ contract FraxUnifiedFarm_ERC20 is FraxUnifiedFarmTemplate {
     }
 
     // Add additional LPs to an existing locked stake
-    function lockAdditional(bytes32 kek_id, uint256 addl_liq) updateRewardAndBalance(msg.sender, true) public {
+    function lockAdditional(bytes32 kek_id, uint256 addl_liq) updateRewardAndBalance(msg.sender, true) public { // CESAR no reentracy protection and side effects after receive token
         // Get the stake and its index
         (LockedStake memory thisStake, uint256 theArrayIndex) = _getStake(msg.sender, kek_id);
 
@@ -2417,7 +2417,7 @@ contract FraxUnifiedFarm_ERC20 is FraxUnifiedFarmTemplate {
         uint256 new_amt = thisStake.liquidity + addl_liq;
 
         // Checks
-        require(addl_liq >= 0, "Must be positive");
+        require(addl_liq >= 0, "Must be positive"); // CESAR > should be fine. do we want liq of 0 ?
 
         // Pull the tokens from the sender
         TransferHelper.safeTransferFrom(address(stakingToken), msg.sender, address(this), addl_liq);
@@ -2463,7 +2463,7 @@ contract FraxUnifiedFarm_ERC20 is FraxUnifiedFarmTemplate {
 
         // Pull in the required token(s)
         // Varies per farm
-        TransferHelper.safeTransferFrom(address(stakingToken), source_address, address(this), liquidity);
+        TransferHelper.safeTransferFrom(address(stakingToken), source_address, address(this), liquidity); // CESAR same advice, consider do the transfer the last thing in case this function gets called in a function without reentrancy
 
         // Get the lock multiplier and kek_id
         uint256 lock_multiplier = lockMultiplier(secs);
