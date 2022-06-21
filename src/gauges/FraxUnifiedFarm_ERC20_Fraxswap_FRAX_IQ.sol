@@ -5,6 +5,7 @@ pragma solidity >=0.8.0;
 
 // File contracts/Math/Math.sol
 
+import {console} from "forge-std/Test.sol";
 
 /**
  * @dev Standard math utilities missing in the Solidity language.
@@ -1459,7 +1460,8 @@ contract FraxUnifiedFarmTemplate is Owned, ReentrancyGuard {
     }
 
     function rewardRates(uint256 token_idx) public view returns (uint256 rwd_rate) {
-        address gauge_controller_address = gaugeControllers[token_idx];
+        console.log(token_idx);
+        address gauge_controller_address = gaugeControllers[token_idx]; // CESAR <- FAIL. Reason: Index out of bounds if there are 2 reward tokens but only 1 gauge
         if (gauge_controller_address != address(0)) {
             rwd_rate = (IFraxGaugeController(gauge_controller_address).global_emission_rate() * last_gauge_relative_weights[token_idx]) / 1e18;
         }
@@ -1663,6 +1665,15 @@ contract FraxUnifiedFarmTemplate is Owned, ReentrancyGuard {
     function stakerSetVeFXSProxy(address proxy_address) external { // CESAR if someone was in a prev. proxy add liquidity, switch proxy and remove liq. its gonna make balances wrong. worth checking if user was in proxy already
         require(valid_vefxs_proxies[proxy_address], "Invalid proxy");
         require(proxy_allowed_stakers[proxy_address][msg.sender], "Proxy has not allowed you yet");
+
+        // Corner case sanity check to make sure LP isn't double counted
+        address old_proxy_addr = staker_designated_proxies[msg.sender];
+        if (old_proxy_addr != address(0)) {
+            // Remove the LP count from the old proxy
+            proxy_lp_balances[old_proxy_addr] -= _locked_liquidity[msg.sender];
+        }
+
+        // Set the new proxy
         staker_designated_proxies[msg.sender] = proxy_address;
 
         // Add the the LP as well
@@ -2349,6 +2360,7 @@ contract FraxUnifiedFarm_ERC20 is FraxUnifiedFarmTemplate {
 
         // Loop through the locked stakes, first by getting the liquidity * lock_multiplier portion
         new_combined_weight = 0;
+
         for (uint256 i = 0; i < lockedStakes[account].length; i++) {
             LockedStake memory thisStake = lockedStakes[account][i];
 
@@ -2531,7 +2543,7 @@ contract FraxUnifiedFarm_ERC20 is FraxUnifiedFarmTemplate {
 
             // Give the tokens to the destination_address
             // Should throw if insufficient balance
-            stakingToken.transfer(destination_address, liquidity);
+            stakingToken.transfer(destination_address, liquidity); // CESAR Should we do an assert / require here bool true ?
 
             // Need to call again to make sure everything is correct
             _updateRewardAndBalance(staker_address, false);
@@ -2550,13 +2562,13 @@ contract FraxUnifiedFarm_ERC20 is FraxUnifiedFarmTemplate {
     /* ========== RESTRICTED FUNCTIONS - Curator / migrator callable ========== */
 
     // Migrator can stake for someone else (they won't be able to withdraw it back though, only staker_address can).
-    function migrator_stakeLocked_for(address staker_address, uint256 amount, uint256 secs, uint256 start_timestamp) external isMigrating {
+    function migrator_stakeLocked_for(address staker_address, uint256 amount, uint256 secs, uint256 start_timestamp) external isMigrating { // CESAR: should we add no reentrancy here and in migrator_withdraw_locked ? a migrator could potentially try to do something funky and do a reentrancy.
         require(staker_allowed_migrators[staker_address][msg.sender] && valid_migrators[msg.sender], "Mig. invalid or unapproved");
         _stakeLocked(staker_address, msg.sender, amount, secs, start_timestamp);
     }
 
     // Used for migrations
-    function migrator_withdraw_locked(address staker_address, bytes32 kek_id) external isMigrating {
+    function migrator_withdraw_locked(address staker_address, bytes32 kek_id) external isMigrating { // CESAR: should we add no reentrancy ? same as below
         require(staker_allowed_migrators[staker_address][msg.sender] && valid_migrators[msg.sender], "Mig. invalid or unapproved");
         _withdrawLocked(staker_address, msg.sender, kek_id);
     }

@@ -18,6 +18,7 @@ contract TestFraxFarm is Test {
     uint256[] _rewardRates;
     address[] _gaugeControllers;
     address[] _rewardDistributors;
+    address veFXS = address(0xc8418aF6358FFddA74e09Ca9CC3Fe03Ca6aDC5b0);
 
     function setUp() public {
         reward0 = new MockERC20("RewardToken", "RW1", 18);
@@ -29,6 +30,8 @@ contract TestFraxFarm is Test {
 
         _rewardManagers.push(address(this));
         _rewardManagers.push(address(this));
+
+        vm.etch(veFXS, address(reward0).code); // mocking veFXS
     }
 
     function testFraxPerLPTokenSideA() public {
@@ -59,6 +62,37 @@ contract TestFraxFarm is Test {
         assertTrue(farm.isTokenManagerFor(address(this), address(reward0)));
         assertTrue(farm.isTokenManagerFor(address(this), address(reward1)));
         assertTrue(!farm.isTokenManagerFor(address(reward1), address(reward1)));
+
+        // test basic getters
+        address[] memory rewardTokens = farm.getAllRewardTokens();
+        assertEq(rewardTokens[0], address(reward0));
+        assertEq(rewardTokens[1], address(reward1));
+        assertEq(0, farm.rewardRates(0));
+    }
+
+    function testDeposit() public {
+        address _stakingToken = address(new MockUniToken(address(0x853d955aCEf822Db058eb8505911ED77F175b99e), 1 ether, 0.8 ether, 0.2 ether, 0, true));
+        _rewardRates.push(uint256(0));
+        _rewardRates.push(uint256(1000));
+        _gaugeControllers.push(address(new MockGaugeController(0, 0, 0)));
+        _rewardDistributors.push(address(new MockRewardDistributor(0, 0)));
+        farm = new FraxUnifiedFarm_ERC20_Fraxswap_FRAX_IQ(address(this), _rewardTokens, _rewardManagers, _rewardRates, _gaugeControllers, _rewardDistributors, _stakingToken);
+
+        reward0.mint(address(farm), 1 ether);
+        reward1.mint(address(farm), 1 ether);
+        reward1.mint(address(farm), 1 ether);
+
+        vm.mockCall(
+            veFXS,
+            abi.encodeWithSelector(MockUniToken.totalSupply.selector),
+            abi.encode(1000)
+        );
+
+        vm.expectRevert("Minimum stake time not met");
+        bytes32 kek = farm.stakeLocked(1000, 0.5 days);
+        bytes32 kek2 = farm.stakeLocked(1000, 7 days);
+
+        farm.withdrawLocked(kek2, address(this));
     }
 }
 
@@ -81,6 +115,10 @@ contract MockUniToken {
 
     function transfer(address to, uint value) external returns (bool) {
         return _successTransfer;
+    }
+
+    function transferFrom(address from, address to, uint256 amount) public returns (bool) {
+        return true;
     }
 
     function token0() external view returns (address) {
