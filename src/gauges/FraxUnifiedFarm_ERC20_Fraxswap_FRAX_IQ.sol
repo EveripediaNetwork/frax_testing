@@ -1460,7 +1460,6 @@ contract FraxUnifiedFarmTemplate is Owned, ReentrancyGuard {
     }
 
     function rewardRates(uint256 token_idx) public view returns (uint256 rwd_rate) {
-        console.log(token_idx);
         address gauge_controller_address = gaugeControllers[token_idx]; // CESAR <- FAIL. Reason: Index out of bounds if there are 2 reward tokens but only 1 gauge
         if (gauge_controller_address != address(0)) {
             rwd_rate = (IFraxGaugeController(gauge_controller_address).global_emission_rate() * last_gauge_relative_weights[token_idx]) / 1e18;

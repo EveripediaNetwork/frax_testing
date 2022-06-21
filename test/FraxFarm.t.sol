@@ -75,6 +75,7 @@ contract TestFraxFarm is Test {
         _rewardRates.push(uint256(0));
         _rewardRates.push(uint256(1000));
         _gaugeControllers.push(address(new MockGaugeController(0, 0, 0)));
+        _gaugeControllers.push(address(0));
         _rewardDistributors.push(address(new MockRewardDistributor(0, 0)));
         farm = new FraxUnifiedFarm_ERC20_Fraxswap_FRAX_IQ(address(this), _rewardTokens, _rewardManagers, _rewardRates, _gaugeControllers, _rewardDistributors, _stakingToken);
 
@@ -92,6 +93,10 @@ contract TestFraxFarm is Test {
         bytes32 kek = farm.stakeLocked(1000, 0.5 days);
         bytes32 kek2 = farm.stakeLocked(1000, 7 days);
 
+        vm.expectRevert("Stake is still locked!");
+        farm.withdrawLocked(kek2, address(this));
+
+        vm.warp(block.timestamp + 7 days);
         farm.withdrawLocked(kek2, address(this));
     }
 }
