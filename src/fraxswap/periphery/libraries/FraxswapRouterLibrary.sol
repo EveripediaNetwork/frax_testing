@@ -32,7 +32,7 @@ pragma solidity ^0.8.0;
 // Justin Moore: https://github.com/0xJM
 
 import '../../core/interfaces/IFraxswapPair.sol';
-import "../../../lib/forge-std/src/console.sol";
+import "../../../../lib/forge-std/src/console.sol";
 
 library FraxswapRouterLibrary {
 
@@ -50,7 +50,7 @@ library FraxswapRouterLibrary {
                 hex'ff',
                 factory,
                 keccak256(abi.encodePacked(token0, token1)),
-                hex'61441d05a2d34fa1e6b9d9bf690d21dc219e2df5347ebb10629765cf0923c5ac' // init code hash // TODO: revert later
+                hex'ee3b43320f0846aad5adcd9318bbc12ab9271d47f961afc5bb01f12613a99ca4' // init code hash // TODO: revert later
             )))));
     }
 

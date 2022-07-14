@@ -4,7 +4,7 @@ pragma solidity >=0.8.10;
 import {Test, stdError, console} from "forge-std/Test.sol";
 import {ERC20} from "solmate/tokens/ERC20.sol";
 import {MockERC20} from "solmate/test/utils/mocks/MockERC20.sol";
-import {FraxUnifiedFarm_ERC20_Fraxswap_FRAX_IQ} from "../src/gauges/FraxUnifiedFarm_ERC20_Fraxswap_FRAX_IQ.sol";
+import {FraxUnifiedFarm_ERC20_Fraxswap_FRAX_IQ} from "../../src/gauges/FraxUnifiedFarm_ERC20_Fraxswap_FRAX_IQ.sol";
 
 contract TestFraxFarm is Test {
 
@@ -127,9 +127,6 @@ contract TestFraxFarm is Test {
         farm.lockLonger(kek, block.timestamp + 2 days);
 
         farm.lockLonger(kek, block.timestamp + 14 days);
-
-        FraxUnifiedFarm_ERC20.LockedStake[] memory stakes = farm.lockedStakesOf(address(this));
-        assertEq(stakes[0].kek_id, kek);
     }
 }
 

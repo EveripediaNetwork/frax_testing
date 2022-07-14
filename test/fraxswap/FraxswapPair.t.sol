@@ -4,9 +4,9 @@ pragma solidity >=0.8.10;
 import {Test, stdError, console} from "forge-std/Test.sol";
 import {ERC20} from "solmate/tokens/ERC20.sol";
 import {MockERC20} from "solmate/test/utils/mocks/MockERC20.sol";
-import {FraxswapPair} from "../src/core/FraxswapPair.sol";
-import {UQ112x112} from "../src/core/libraries/UQ112x112.sol";
-import "../lib/forge-std/src/console.sol";
+import {FraxswapPair} from "../../src/fraxswap/core/FraxswapPair.sol";
+import {UQ112x112} from "../../src/fraxswap/core/libraries/UQ112x112.sol";
+import "../../lib/forge-std/src/console.sol";
 
 contract MockFactory {
     function feeTo() public returns (address) {
@@ -558,7 +558,7 @@ contract TestFraxswapPair is Test {
             ,
             ,
         ) = pair.getTwammState();
-        
+
         (
             ,
             ,

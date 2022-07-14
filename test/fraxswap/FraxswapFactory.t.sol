@@ -2,10 +2,10 @@
 pragma solidity >=0.8.10;
 
 import {Test} from "forge-std/Test.sol";
-import {FraxswapFactory} from "../src/core/FraxswapFactory.sol";
-import {FraxswapPair} from "../src/core/FraxswapPair.sol";
+import {FraxswapFactory} from "../../src/fraxswap/core/FraxswapFactory.sol";
+import {FraxswapPair} from "../../src/fraxswap/core/FraxswapPair.sol";
 import {MockERC20} from "solmate/test/utils/mocks/MockERC20.sol";
-import {FraxswapRouterLibrary} from "../src/periphery/libraries/FraxswapRouterLibrary.sol";
+import {FraxswapRouterLibrary} from "../../src/fraxswap/periphery/libraries/FraxswapRouterLibrary.sol";
 
 contract TestFraxswapFactory is Test {
     FraxswapFactory public factory;
