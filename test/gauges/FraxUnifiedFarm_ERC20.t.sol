@@ -6,7 +6,7 @@ import {ERC20} from "solmate/tokens/ERC20.sol";
 import {MockERC20} from "solmate/test/utils/mocks/MockERC20.sol";
 import {FraxUnifiedFarm_ERC20} from "../../src/gauges/FraxUnifiedFarm_ERC20.sol";
 
-contract TestFraxFarm is Test {
+contract TestFraxFraxUnifiedFarm_ERC20 is Test {
 
     FraxUnifiedFarm_ERC20 public farm;
 
