@@ -2454,6 +2454,38 @@ contract FraxUnifiedFarm_ERC20 is FraxUnifiedFarmTemplate {
         _updateRewardAndBalance(msg.sender, false);
     }
 
+    function lockLonger(bytes32 kek_id, uint256 new_ending_ts) updateRewardAndBalance(msg.sender, true) public {
+        // Get the stake and its index
+        (LockedStake memory thisStake, uint256 theArrayIndex) = _getStake(msg.sender, kek_id);
+
+        // Check
+        require(new_ending_ts > block.timestamp, "Must be in the future");
+
+        // Calculate some times
+        uint256 time_left = (thisStake.ending_timestamp > block.timestamp) ? thisStake.ending_timestamp - block.timestamp : 0;
+        uint256 new_secs = new_ending_ts - block.timestamp;
+
+        // Checks
+        // require(time_left > 0, "Already expired");
+        require(new_secs > time_left, "Cannot shorten lock time");
+        require(new_secs >= lock_time_min, "Minimum stake time not met");
+        require(new_secs <= lock_time_for_max_multiplier, "Trying to lock for too long");
+
+        // Update the stake
+        lockedStakes[msg.sender][theArrayIndex] = LockedStake(
+            kek_id,
+            block.timestamp,
+            thisStake.liquidity,
+            new_ending_ts,
+            lockMultiplier(new_secs)
+        );
+
+        // Need to call to update the combined weights
+        _updateRewardAndBalance(msg.sender, false);
+
+        emit LockedLonger(msg.sender, kek_id, new_secs, block.timestamp, new_ending_ts);
+    }
+
     // Two different stake functions are needed because of delegateCall and msg.sender issues (important for migration)
     function stakeLocked(uint256 liquidity, uint256 secs) nonReentrant external returns (bytes32) {
         return _stakeLocked(msg.sender, msg.sender, liquidity, secs, block.timestamp);
@@ -2580,6 +2612,7 @@ contract FraxUnifiedFarm_ERC20 is FraxUnifiedFarmTemplate {
 
     event StakeLocked(address indexed user, uint256 amount, uint256 secs, bytes32 kek_id, address source_address);
     event WithdrawLocked(address indexed user, uint256 liquidity, bytes32 kek_id, address destination_address);
+    event LockedLonger(address indexed user, bytes32 kek_id, uint256 new_secs, uint256 new_start_ts, uint256 new_end_ts);
 }
 
 

@@ -81,7 +81,6 @@ contract TestFraxFarm is Test {
 
         reward0.mint(address(farm), 1 ether);
         reward1.mint(address(farm), 1 ether);
-        reward1.mint(address(farm), 1 ether);
 
         vm.mockCall(
             veFXS,
@@ -98,6 +97,39 @@ contract TestFraxFarm is Test {
 
         vm.warp(block.timestamp + 7 days);
         farm.withdrawLocked(kek2, address(this));
+    }
+
+    function testLockLonger() public {
+        address _stakingToken = address(new MockUniToken(address(0x853d955aCEf822Db058eb8505911ED77F175b99e), 1 ether, 0.8 ether, 0.2 ether, 0, true));
+        _rewardRates.push(uint256(0));
+        _rewardRates.push(uint256(1000));
+        _gaugeControllers.push(address(new MockGaugeController(0, 0, 0)));
+        _gaugeControllers.push(address(0));
+        _rewardDistributors.push(address(new MockRewardDistributor(0, 0)));
+        farm = new FraxUnifiedFarm_ERC20_Fraxswap_FRAX_IQ(address(this), _rewardTokens, _rewardManagers, _rewardRates, _gaugeControllers, _rewardDistributors, _stakingToken);
+
+        reward0.mint(address(farm), 1 ether);
+        reward1.mint(address(farm), 1 ether);
+
+        vm.mockCall(
+            veFXS,
+            abi.encodeWithSelector(MockUniToken.totalSupply.selector),
+            abi.encode(1000)
+        );
+
+
+        bytes32 kek = farm.stakeLocked(1000, 7 days);
+
+        vm.expectRevert("Must be in the future");
+        farm.lockLonger(kek, block.timestamp);
+
+        vm.expectRevert("Cannot shorten lock time");
+        farm.lockLonger(kek, block.timestamp + 2 days);
+
+        farm.lockLonger(kek, block.timestamp + 14 days);
+
+        FraxUnifiedFarm_ERC20.LockedStake[] memory stakes = farm.lockedStakesOf(address(this));
+        assertEq(stakes[0].kek_id, kek);
     }
 }
 
