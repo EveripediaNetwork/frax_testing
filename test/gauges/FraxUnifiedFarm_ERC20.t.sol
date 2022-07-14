@@ -95,7 +95,7 @@ contract TestFraxFraxUnifiedFarm_ERC20 is Test {
         vm.expectRevert("Stake is still locked!");
         farm.withdrawLocked(kek2, address(this));
 
-        vm.warp(block.timestamp + 7 days);
+        skip(7 days);
         farm.withdrawLocked(kek2, address(this));
     }
 
@@ -154,16 +154,16 @@ contract TestFraxFraxUnifiedFarm_ERC20 is Test {
             abi.encode(1000)
         );
         vm.prank(sam);
-        farm.stakeLocked(1 ether, 21 days);
+        farm.stakeLocked(2 ether, 7 days);
         vm.prank(cesar);
-        farm.stakeLocked(1 ether, 21 days);
+        farm.stakeLocked(1 ether, 7 days);
         vm.prank(travis);
-        farm.stakeLocked(1 ether, 21 days);
+        farm.stakeLocked(1 ether, 7 days);
 
-        vm.warp(block.timestamp + 7 days);
+        skip(7 days);
         vm.prank(sam);
         uint256[] memory rewards = farm.getReward(sam);
-        //console.log(rewards[0]);
+        console.log("rewards", rewards[0]);
         // TODO: change reward rate for next week and claim w other user move a test3Users3Weeks1Claim
         // TODO: move a last week, change reward rate and claim w cesar
     }
