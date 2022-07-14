@@ -4,11 +4,11 @@ pragma solidity >=0.8.10;
 import {Test, stdError, console} from "forge-std/Test.sol";
 import {ERC20} from "solmate/tokens/ERC20.sol";
 import {MockERC20} from "solmate/test/utils/mocks/MockERC20.sol";
-import {FraxUnifiedFarm_ERC20_Fraxswap_FRAX_IQ} from "../../src/gauges/FraxUnifiedFarm_ERC20_Fraxswap_FRAX_IQ.sol";
+import {FraxUnifiedFarm_ERC20} from "../../src/gauges/FraxUnifiedFarm_ERC20.sol";
 
 contract TestFraxFarm is Test {
 
-    FraxUnifiedFarm_ERC20_Fraxswap_FRAX_IQ public farm;
+    FraxUnifiedFarm_ERC20 public farm;
 
     MockERC20 public reward0;
     MockERC20 public reward1;
@@ -39,7 +39,7 @@ contract TestFraxFarm is Test {
         _rewardRates.push(uint256(1000));
         _gaugeControllers.push(address(new MockGaugeController(0, 0, 0)));
         _rewardDistributors.push(address(new MockRewardDistributor(0, 0)));
-        farm = new FraxUnifiedFarm_ERC20_Fraxswap_FRAX_IQ(address(this), _rewardTokens, _rewardManagers, _rewardRates, _gaugeControllers, _rewardDistributors, _stakingToken);
+        farm = new FraxUnifiedFarm_ERC20(address(this), _rewardTokens, _rewardManagers, _rewardRates, _gaugeControllers, _rewardDistributors, _stakingToken);
         assertEq(farm.fraxPerLPToken(), 0.8 ether);
     }
 
@@ -48,7 +48,7 @@ contract TestFraxFarm is Test {
         _rewardRates.push(uint256(1000));
         _gaugeControllers.push(address(new MockGaugeController(0, 0, 0)));
         _rewardDistributors.push(address(new MockRewardDistributor(0, 0)));
-        farm = new FraxUnifiedFarm_ERC20_Fraxswap_FRAX_IQ(address(this), _rewardTokens, _rewardManagers, _rewardRates, _gaugeControllers, _rewardDistributors, _stakingToken);
+        farm = new FraxUnifiedFarm_ERC20(address(this), _rewardTokens, _rewardManagers, _rewardRates, _gaugeControllers, _rewardDistributors, _stakingToken);
         assertEq(farm.fraxPerLPToken(), 0.8 ether);
         assertTrue(farm.isTokenManagerFor(address(this), address(reward0)));
     }
@@ -58,7 +58,7 @@ contract TestFraxFarm is Test {
         _rewardRates.push(uint256(1000));
         _gaugeControllers.push(address(new MockGaugeController(0, 0, 0)));
         _rewardDistributors.push(address(new MockRewardDistributor(0, 0)));
-        farm = new FraxUnifiedFarm_ERC20_Fraxswap_FRAX_IQ(address(this), _rewardTokens, _rewardManagers, _rewardRates, _gaugeControllers, _rewardDistributors, _stakingToken);
+        farm = new FraxUnifiedFarm_ERC20(address(this), _rewardTokens, _rewardManagers, _rewardRates, _gaugeControllers, _rewardDistributors, _stakingToken);
         assertTrue(farm.isTokenManagerFor(address(this), address(reward0)));
         assertTrue(farm.isTokenManagerFor(address(this), address(reward1)));
         assertTrue(!farm.isTokenManagerFor(address(reward1), address(reward1)));
@@ -77,7 +77,7 @@ contract TestFraxFarm is Test {
         _gaugeControllers.push(address(new MockGaugeController(0, 0, 0)));
         _gaugeControllers.push(address(0));
         _rewardDistributors.push(address(new MockRewardDistributor(0, 0)));
-        farm = new FraxUnifiedFarm_ERC20_Fraxswap_FRAX_IQ(address(this), _rewardTokens, _rewardManagers, _rewardRates, _gaugeControllers, _rewardDistributors, _stakingToken);
+        farm = new FraxUnifiedFarm_ERC20(address(this), _rewardTokens, _rewardManagers, _rewardRates, _gaugeControllers, _rewardDistributors, _stakingToken);
 
         reward0.mint(address(farm), 1 ether);
         reward1.mint(address(farm), 1 ether);
@@ -106,7 +106,7 @@ contract TestFraxFarm is Test {
         _gaugeControllers.push(address(new MockGaugeController(0, 0, 0)));
         _gaugeControllers.push(address(0));
         _rewardDistributors.push(address(new MockRewardDistributor(0, 0)));
-        farm = new FraxUnifiedFarm_ERC20_Fraxswap_FRAX_IQ(address(this), _rewardTokens, _rewardManagers, _rewardRates, _gaugeControllers, _rewardDistributors, _stakingToken);
+        farm = new FraxUnifiedFarm_ERC20(address(this), _rewardTokens, _rewardManagers, _rewardRates, _gaugeControllers, _rewardDistributors, _stakingToken);
 
         reward0.mint(address(farm), 1 ether);
         reward1.mint(address(farm), 1 ether);
