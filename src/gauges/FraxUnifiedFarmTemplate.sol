@@ -34,6 +34,8 @@ pragma solidity >=0.8.0;
 // (Locked, veFXS, and UniV3 portions are new)
 // https://raw.githubusercontent.com/Synthetixio/synthetix/develop/contracts/StakingRewards.sol
 
+import {console} from "forge-std/Test.sol";
+
 import "./Math/Math.sol";
 import "./Curve/IveFXS.sol";
 import "./Curve/IFraxGaugeController.sol";
@@ -53,10 +55,10 @@ contract FraxUnifiedFarmTemplate is Owned, ReentrancyGuard {
     /* ========== STATE VARIABLES ========== */
 
     // Instances
-    IveFXS private immutable veFXS = IveFXS(0xc8418aF6358FFddA74e09Ca9CC3Fe03Ca6aDC5b0);
+    IveFXS private constant veFXS = IveFXS(0xc8418aF6358FFddA74e09Ca9CC3Fe03Ca6aDC5b0);
 
     // Frax related
-    address internal immutable frax_address = 0x853d955aCEf822Db058eb8505911ED77F175b99e;
+    address internal constant frax_address = 0x853d955aCEf822Db058eb8505911ED77F175b99e;
     bool internal frax_is_token0;
     uint256 public fraxPerLPStored;
 

@@ -4,7 +4,7 @@ pragma solidity >=0.8.10;
 import {Test, stdError, console} from "forge-std/Test.sol";
 import {ERC20} from "solmate/tokens/ERC20.sol";
 import {MockERC20} from "solmate/test/utils/mocks/MockERC20.sol";
-import {FraxUnifiedFarm_ERC20} from "../../src/gauges/FraxUnifiedFarm_ERC20.sol";
+import {FraxUnifiedFarm_ERC20, LockedStake} from "../../src/gauges/FraxUnifiedFarm_ERC20.sol";
 
 contract TestFraxFraxUnifiedFarm_ERC20 is Test {
 
@@ -127,7 +127,55 @@ contract TestFraxFraxUnifiedFarm_ERC20 is Test {
         farm.lockLonger(kek, block.timestamp + 2 days);
 
         farm.lockLonger(kek, block.timestamp + 14 days);
+
+        LockedStake[] memory stakes = farm.lockedStakesOf(address(this));
+        assertEq(stakes[0].kek_id, kek);
     }
+
+    function test3Users3Weeks1Claim() public {
+        address _stakingToken = address(new MockUniToken(address(0x853d955aCEf822Db058eb8505911ED77F175b99e), 3 ether, 5 ether, 5 ether, 0, true));
+
+        address sam = vm.addr(31337);
+        address cesar = vm.addr(31338);
+        address travis = vm.addr(31339);
+
+        uint oneTokenPerDay = 11574074074074;
+        _rewardRates.push(oneTokenPerDay);
+        _gaugeControllers.push(address(0));
+        _rewardDistributors.push(address(new MockRewardDistributor(0, 0)));
+        _rewardTokens.pop(); // remove default test second token reward
+        farm = new FraxUnifiedFarm_ERC20(address(this), _rewardTokens, _rewardManagers, _rewardRates, _gaugeControllers, _rewardDistributors, _stakingToken);
+
+        reward0.mint(address(farm), 21 ether);
+
+        vm.mockCall(
+            veFXS,
+            abi.encodeWithSelector(MockUniToken.totalSupply.selector),
+            abi.encode(1000)
+        );
+        vm.prank(sam);
+        farm.stakeLocked(1 ether, 21 days);
+        vm.prank(cesar);
+        farm.stakeLocked(1 ether, 21 days);
+        vm.prank(travis);
+        farm.stakeLocked(1 ether, 21 days);
+
+        vm.warp(block.timestamp + 7 days);
+        vm.prank(sam);
+        uint256[] memory rewards = farm.getReward(sam);
+        //console.log(rewards[0]);
+        // TODO: change reward rate for next week and claim w other user move a test3Users3Weeks1Claim
+        // TODO: move a last week, change reward rate and claim w cesar
+    }
+
+    // TODO: test case ideas
+    // test 3 users 3 weeks 1 claim last week
+    // test max boost time & veFXS
+    // test no vefxs
+    // test max boost w proxy
+    // test lock more w veFXS boost
+    // test lock multiplier after expiration calculation
+    // test w gauge controller instead of set
 }
 
 contract MockUniToken {

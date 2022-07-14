@@ -43,6 +43,14 @@ import './Uniswap/Interfaces/IUniswapV2Pair.sol';
 
 // ------------------------------------------------
 
+struct LockedStake {
+    bytes32 kek_id;
+    uint256 start_timestamp;
+    uint256 liquidity;
+    uint256 ending_timestamp;
+    uint256 lock_multiplier; // 6 decimals of precision. 1x = 1000000
+}
+
 contract FraxUnifiedFarm_ERC20 is FraxUnifiedFarmTemplate {
 
     /* ========== STATE VARIABLES ========== */
@@ -75,17 +83,6 @@ contract FraxUnifiedFarm_ERC20 is FraxUnifiedFarmTemplate {
 
     // Stake tracking
     mapping(address => LockedStake[]) public lockedStakes;
-
-    /* ========== STRUCTS ========== */
-
-    // Struct for the stake
-    struct LockedStake {
-        bytes32 kek_id;
-        uint256 start_timestamp;
-        uint256 liquidity;
-        uint256 ending_timestamp;
-        uint256 lock_multiplier; // 6 decimals of precision. 1x = 1000000
-    }
 
     /* ========== CONSTRUCTOR ========== */
 
