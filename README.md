@@ -1,6 +1,6 @@
-# <h1 align="center"> FRAXSWAP </h1>
+# <h1 align="center"> FRAX </h1>
 
-**FRAXSWAP TESTING**
+**FRAX TESTING**
 
 
 ## Getting Started
