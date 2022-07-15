@@ -146,7 +146,7 @@ contract TestFraxFraxUnifiedFarm_ERC20 is Test {
         _rewardTokens.pop(); // remove default test second token reward
         farm = new FraxUnifiedFarm_ERC20(address(this), _rewardTokens, _rewardManagers, _rewardRates, _gaugeControllers, _rewardDistributors, _stakingToken);
 
-        reward0.mint(address(farm), 21 ether);
+        reward0.mint(address(farm), 100 ether);
 
         vm.mockCall(
             veFXS,
@@ -163,15 +163,107 @@ contract TestFraxFraxUnifiedFarm_ERC20 is Test {
         skip(7 days);
         vm.prank(sam);
         uint256[] memory rewards = farm.getReward(sam);
-        console.log("rewards", rewards[0]);
-        // TODO: change reward rate for next week and claim w other user move a test3Users3Weeks1Claim
-        // TODO: move a last week, change reward rate and claim w cesar
+        assertGt(rewards[0], 3.499999 ether);
+        assertLt(rewards[0], 3.5 ether);
+
+        // 2x rewards (14 IQ per day)
+        farm.setRewardVars(_rewardTokens[0], oneTokenPerDay * 2, address(0), _rewardDistributors[0]);
+        skip(7 days);
+        vm.prank(sam);
+        rewards = farm.getReward(sam);
+        assertGt(rewards[0], 6.93 ether);
+        assertLt(rewards[0], 7 ether);
+
+        vm.prank(travis);
+        rewards = farm.getReward(travis);
+        // 7 * 25/100 + 7*2 * 25/100 = 5.25
+        assertGt(rewards[0], 5.28 ether);
+        assertLt(rewards[0], 5.29 ether);
+
+        // 10x rewards (70 IQ per day)
+        farm.setRewardVars(_rewardTokens[0], oneTokenPerDay * 10, address(0), _rewardDistributors[0]);
+        skip(7 days);
+
+        vm.prank(cesar);
+        rewards = farm.getReward(travis);
+        // 7 * 25/100 + 7*2 * 25/100 + 7*10 * 25 /100 = 22.75
+        assertGt(rewards[0], 23.23 ether);
+        assertLt(rewards[0], 23.24 ether);
+    }
+
+    function testMaxBoostTime() public {
+        address _stakingToken = address(new MockUniToken(address(0x853d955aCEf822Db058eb8505911ED77F175b99e), 3 ether, 5 ether, 5 ether, 0, true));
+
+        address sam = vm.addr(31337);
+        address cesar = vm.addr(31338);
+
+        uint oneTokenPerDay = 11574074074074;
+        _rewardRates.push(oneTokenPerDay);
+        _gaugeControllers.push(address(0));
+        _rewardDistributors.push(address(new MockRewardDistributor(0, 0)));
+        _rewardTokens.pop(); // remove default test second token reward
+        farm = new FraxUnifiedFarm_ERC20(address(this), _rewardTokens, _rewardManagers, _rewardRates, _gaugeControllers, _rewardDistributors, _stakingToken);
+
+        reward0.mint(address(farm), 365 ether);
+
+        vm.mockCall(
+            veFXS,
+            abi.encodeWithSelector(MockUniToken.totalSupply.selector),
+            abi.encode(1000)
+        );
+        vm.prank(sam);
+        farm.stakeLocked(2 ether, 7 days);
+        vm.prank(cesar);
+        farm.stakeLocked(1 ether, 365 days);
+
+        skip(7 days);
+        vm.prank(cesar);
+        uint256[] memory rewards = farm.getReward(cesar);
+        // 2.863 ether sam // 4.136 eth cesar
+        assertGt(rewards[0], 3.499999 ether);
+        assertLt(rewards[0], 3.5 ether);
+    }
+
+    function testMaxBoostTimeAndVeFXS() public {
+        address _stakingToken = address(new MockUniToken(address(0x853d955aCEf822Db058eb8505911ED77F175b99e), 3 ether, 5 ether, 5 ether, 0, true));
+
+        address sam = vm.addr(31337);
+        address cesar = vm.addr(31338);
+
+        uint oneTokenPerDay = 11574074074074;
+        _rewardRates.push(oneTokenPerDay);
+        _gaugeControllers.push(address(0));
+        _rewardDistributors.push(address(new MockRewardDistributor(0, 0)));
+        _rewardTokens.pop(); // remove default test second token reward
+        farm = new FraxUnifiedFarm_ERC20(address(this), _rewardTokens, _rewardManagers, _rewardRates, _gaugeControllers, _rewardDistributors, _stakingToken);
+
+        reward0.mint(address(farm), 365 ether);
+
+        vm.mockCall(
+            veFXS,
+            abi.encodeWithSelector(MockUniToken.totalSupply.selector),
+            abi.encode(1 ether)
+        );
+        vm.mockCall(
+            veFXS,
+            abi.encodeWithSelector(MockUniToken.balanceOf.selector, cesar),
+            abi.encode(1 ether)
+        );
+        vm.prank(sam);
+        farm.stakeLocked(2 ether, 7 days);
+        vm.prank(cesar);
+        farm.stakeLocked(1 ether, 365 days);
+
+        skip(7 days);
+        vm.prank(sam);
+        uint256[] memory rewards = farm.getReward(sam);
+        // 2.054 ether sam // 4.9457 eth cesar
+        assertGt(rewards[0], 3.499999 ether);
+        assertLt(rewards[0], 3.5 ether);
     }
 
     // TODO: test case ideas
-    // test 3 users 3 weeks 1 claim last week
     // test max boost time & veFXS
-    // test no vefxs
     // test max boost w proxy
     // test lock more w veFXS boost
     // test lock multiplier after expiration calculation
@@ -193,6 +285,10 @@ contract MockUniToken {
         _reserve1 = reserve1;
         _blockTimestampLast = blockTimestampLast;
         _successTransfer = successTransfer;
+    }
+
+    function balanceOf(address to) external view returns (uint) {
+        return _totalSupply;
     }
 
     function transfer(address to, uint value) external returns (bool) {
