@@ -1,7 +1,6 @@
-// SPDX-License-Identifier: MIT
-pragma solidity >=0.6.11;
+pragma solidity >=0.5.0;
 
-interface IUniswapV2Pair {
+interface IUniswapV2PairV5 {
     event Approval(address indexed owner, address indexed spender, uint value);
     event Transfer(address indexed from, address indexed to, uint value);
 
@@ -48,19 +47,5 @@ interface IUniswapV2Pair {
     function swap(uint amount0Out, uint amount1Out, address to, bytes calldata data) external;
     function skim(address to) external;
     function sync() external;
-
     function initialize(address, address) external;
-
-
-
-
-
-
-
-
-
-
-
-
-
 }

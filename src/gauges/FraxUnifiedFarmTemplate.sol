@@ -42,7 +42,6 @@ import "./Curve/IFraxGaugeController.sol";
 import "./Curve/IFraxGaugeFXSRewardsDistributor.sol";
 import './Uniswap/TransferHelper.sol';
 import "./ERC20/IERC20.sol";
-import "./ERC20/SafeERC20.sol";
 import "./Utils/ReentrancyGuard.sol";
 import "./Utils/Owned.sol";
 
@@ -50,16 +49,14 @@ import "./Utils/Owned.sol";
 import "./Misc_AMOs/convex/IConvexBaseRewardPool.sol";
 
 contract FraxUnifiedFarmTemplate is Owned, ReentrancyGuard {
-    using SafeERC20 for IERC20;
 
     /* ========== STATE VARIABLES ========== */
 
     // Instances
-    IveFXS private constant veFXS = IveFXS(0xc8418aF6358FFddA74e09Ca9CC3Fe03Ca6aDC5b0);
+    IveFXS private immutable veFXS = IveFXS(0xc8418aF6358FFddA74e09Ca9CC3Fe03Ca6aDC5b0);
 
     // Frax related
-    address internal constant frax_address = 0x853d955aCEf822Db058eb8505911ED77F175b99e;
-    bool internal frax_is_token0;
+    address internal immutable frax_address = 0x853d955aCEf822Db058eb8505911ED77F175b99e;
     uint256 public fraxPerLPStored;
 
     // Constant for various precisions
@@ -137,8 +134,8 @@ contract FraxUnifiedFarmTemplate is Owned, ReentrancyGuard {
         _;
     }
 
-    modifier updateRewardAndBalance(address account, bool sync_too) {
-        _updateRewardAndBalance(account, sync_too);
+    modifier updateRewardAndBalanceMdf(address account, bool sync_too) {
+        updateRewardAndBalance(account, sync_too);
         _;
     }
 
@@ -430,7 +427,7 @@ contract FraxUnifiedFarmTemplate is Owned, ReentrancyGuard {
 
     // ------ REWARDS SYNCING ------
 
-    function _updateRewardAndBalance(address account, bool sync_too) internal {
+    function updateRewardAndBalance(address account, bool sync_too) public {
         // Need to retro-adjust some things if the period hasn't been renewed, then start a new one
         if (sync_too){
             sync();
@@ -505,7 +502,7 @@ contract FraxUnifiedFarmTemplate is Owned, ReentrancyGuard {
     }
 
     // No withdrawer == msg.sender check needed since this is only internally callable
-    function _getReward(address rewardee, address destination_address, bool do_extra_logic) internal updateRewardAndBalance(rewardee, true) returns (uint256[] memory rewards_before) {
+    function _getReward(address rewardee, address destination_address, bool do_extra_logic) internal updateRewardAndBalanceMdf(rewardee, true) returns (uint256[] memory rewards_before) {
         // Update the last reward claim time first, as an extra reentrancy safeguard
         lastRewardClaimTime[rewardee] = block.timestamp;
 

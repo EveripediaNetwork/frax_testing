@@ -220,8 +220,8 @@ contract TestFraxFraxUnifiedFarm_ERC20 is Test {
         vm.prank(cesar);
         uint256[] memory rewards = farm.getReward(cesar);
         // 2.863 ether sam // 4.136 eth cesar
-        assertGt(rewards[0], 3.499999 ether);
-        assertLt(rewards[0], 3.5 ether);
+        assertGt(rewards[0], 4.13 ether);
+        assertLt(rewards[0], 4.14 ether);
     }
 
     function testMaxBoostTimeAndVeFXS() public {
@@ -255,19 +255,12 @@ contract TestFraxFraxUnifiedFarm_ERC20 is Test {
         farm.stakeLocked(1 ether, 365 days);
 
         skip(7 days);
-        vm.prank(sam);
-        uint256[] memory rewards = farm.getReward(sam);
+        vm.prank(cesar);
+        uint256[] memory rewards = farm.getReward(cesar);
         // 2.054 ether sam // 4.9457 eth cesar
-        assertGt(rewards[0], 3.499999 ether);
-        assertLt(rewards[0], 3.5 ether);
+        assertGt(rewards[0], 4.9 ether);
+        assertLt(rewards[0], 5 ether);
     }
-
-    // TODO: test case ideas
-    // test max boost time & veFXS
-    // test max boost w proxy
-    // test lock more w veFXS boost
-    // test lock multiplier after expiration calculation
-    // test w gauge controller instead of set
 }
 
 contract MockUniToken {
@@ -307,8 +300,8 @@ contract MockUniToken {
         return _totalSupply;
     }
 
-    function getReserves() external view returns (uint112 reserve0, uint112 reserve1, uint32 blockTimestampLast) {
-        return (_reserve0, _reserve1, _blockTimestampLast);
+    function getReserveAfterTwamm(uint256 blockTimestamp) external view returns (uint112 reserve0, uint112 reserve1, uint256 lastVirtualOrderTimestamp, uint112 _twammReserve0, uint112 _twammReserve1) {
+        return (_reserve0, _reserve1, _blockTimestampLast, _reserve0, _reserve1);
     }
 }
 
