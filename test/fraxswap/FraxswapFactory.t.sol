@@ -91,21 +91,21 @@ contract TestFraxswapFactory is Test {
     }
 
     function testCannotCreatePairIdenticalTokens() public {
-        vm.expectRevert("IDENTICAL_ADDRESSES");
+        vm.expectRevert(abi.encodeWithSelector(FraxswapFactory.IdenticalAddress.selector));
         factory.createPair(address(token0), address(token0));
     }
 
     function testCannotCreatePairInvalidToken() public {
-        vm.expectRevert("ZERO_ADDRESS");
+        vm.expectRevert(abi.encodeWithSelector(FraxswapFactory.ZeroAddress.selector));
         factory.createPair(address(0), address(token1));
 
-        vm.expectRevert("ZERO_ADDRESS");
+        vm.expectRevert(abi.encodeWithSelector(FraxswapFactory.ZeroAddress.selector));
         factory.createPair(address(token0), address(0));
     }
 
     function testCannotCreatePairDuplicatePair() public {
         factory.createPair(address(token0), address(token1));
-        vm.expectRevert("PAIR_EXISTS");
+        vm.expectRevert(abi.encodeWithSelector(FraxswapFactory.PairExists.selector));
         factory.createPair(address(token0), address(token1));
     }
 

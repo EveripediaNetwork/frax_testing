@@ -56,7 +56,7 @@ contract TestFraxswapPair is Test {
         factory = new MockFactory();
         vm.startPrank(address(factory));
         pair = new FraxswapPair();
-        pair.initialize(address(token0), address(token1));
+        pair.initialize(address(token0), address(token1), 30);
         vm.stopPrank();
         console.logBytes32(bytes32(keccak256(type(FraxswapPair).creationCode)));
 
@@ -353,7 +353,7 @@ contract TestFraxswapPair is Test {
     }
 
     function testSwapInvalidAmount() public {
-        vm.expectRevert(abi.encodePacked("EC03"));
+        vm.expectRevert(abi.encodeWithSelector(FraxswapPair.InsufficientOutputAmount.selector));
         pair.swap(0 ether, 0 ether, address(user), "");
     }
 
@@ -362,7 +362,7 @@ contract TestFraxswapPair is Test {
         token1.transfer(address(pair), 1 ether);
         pair.mint(address(this));
 
-        vm.expectRevert(abi.encodePacked("EC04"));
+        vm.expectRevert(abi.encodeWithSelector(FraxswapPair.InsufficientLiquidity.selector, 1 ether, 1 ether));
         pair.swap(3 ether, 0 ether, address(user), "");
     }
 
@@ -371,10 +371,10 @@ contract TestFraxswapPair is Test {
         token1.transfer(address(pair), 1 ether);
         pair.mint(address(this));
 
-        vm.expectRevert(abi.encodePacked("EC04"));
+        vm.expectRevert(abi.encodeWithSelector(FraxswapPair.InsufficientLiquidity.selector, 1 ether, 1 ether));
         pair.swap(1 ether, 0 ether, address(token0), "");
 
-        vm.expectRevert(abi.encodePacked("EC04"));
+        vm.expectRevert(abi.encodeWithSelector(FraxswapPair.InsufficientLiquidity.selector, 1 ether, 1 ether));
         pair.swap(0 ether, 1 ether, address(token1), "");
     }
 
@@ -383,10 +383,10 @@ contract TestFraxswapPair is Test {
         token1.transfer(address(pair), 1 ether);
         pair.mint(address(this));
 
-        vm.expectRevert(abi.encodePacked("EC04"));
+        vm.expectRevert(abi.encodeWithSelector(FraxswapPair.InsufficientLiquidity.selector, 1 ether, 1 ether));
         pair.swap(1 ether, 0 ether, address(user), "");
 
-        vm.expectRevert(abi.encodePacked("EC04"));
+        vm.expectRevert(abi.encodeWithSelector(FraxswapPair.InsufficientLiquidity.selector, 1 ether, 1 ether));
         pair.swap(0 ether, 1 ether, address(user), "");
     }
 
@@ -560,6 +560,7 @@ contract TestFraxswapPair is Test {
         ) = pair.getTwammState();
 
         (
+            ,
             ,
             ,
             uint256 saleRate,

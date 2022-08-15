@@ -134,16 +134,16 @@ contract TestFraxswapRouter is Test {
     }
 
     function testAddLiquidityAmountBDesiredHigh() public {
-        token0.approve(address(router), 4 ether);
-        token1.approve(address(router), 8 ether);
+        token0.approve(address(router), 1 ether);
+        token1.approve(address(router), 2 ether);
 
         router.addLiquidity(
             address(token0),
             address(token1),
-            4 ether,
-            8 ether,
-            4 ether,
-            8 ether,
+            1 ether,
+            2 ether,
+            1 ether,
+            2 ether,
             address(this),
             block.timestamp + 1
         );
