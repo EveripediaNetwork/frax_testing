@@ -33,7 +33,7 @@ pragma solidity ^0.8.0;
 
 import './interfaces/IUniswapV2FactoryV5.sol';
 import './FraxswapPair.sol';
-// import "../../../../lib/forge-std/src/console.sol";
+// import "../../../lib/forge-std/src/console.sol";
 
 contract FraxswapFactory is IUniswapV2FactoryV5 {
     address public override feeTo;
@@ -62,11 +62,11 @@ contract FraxswapFactory is IUniswapV2FactoryV5 {
     }
 
     function createPair(address tokenA, address tokenB) external override returns (address pair) {
-        // console.logBytes32(bytes32(keccak256(type(FraxswapPair).creationCode))); 
         return createPair(tokenA, tokenB, 30); // default fee 0.30%
     }
 
     function createPair(address tokenA, address tokenB, uint fee) public override returns (address pair) {
+        // console.logBytes32(bytes32(keccak256(type(FraxswapPair).creationCode))); 
         if(tokenA == tokenB) revert IdenticalAddress(); // IDENTICAL_ADDRESSES
         (address token0, address token1) = tokenA < tokenB ? (tokenA, tokenB) : (tokenB, tokenA);
         if(token0 == address(0)) revert ZeroAddress(); // ZERO_ADDRESS
