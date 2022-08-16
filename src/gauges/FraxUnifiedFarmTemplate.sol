@@ -34,7 +34,7 @@ pragma solidity >=0.8.0;
 // (Locked, veFXS, and UniV3 portions are new)
 // https://raw.githubusercontent.com/Synthetixio/synthetix/develop/contracts/StakingRewards.sol
 
-import {console} from "forge-std/Test.sol";
+import "lib/forge-std/src/Test.sol";
 
 import "./Math/Math.sol";
 import "./Curve/IveFXS.sol";
